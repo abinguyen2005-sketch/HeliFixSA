@@ -3,10 +3,10 @@
 #include <extensions/ScriptCommands.h>
 #include <extensions/scripting/ScriptCommandNames.h>
 #include <CHud.h>
+#include <cstdlib> // Thư viện bắt buộc để dùng hàm rand()
 
 #define NEWS_CHOPPER 488
 #define COP_CHOPPER 497
-#define COP_CHAR 280
 #define NEWS_CHAR 23
 #define PILOT_CHAR 61
 
@@ -52,13 +52,25 @@ public:
 			if (pVeh->m_nModelIndex == COP_CHOPPER)
 			{
 				int hDriver, hPass;
-				Command<Commands::REQUEST_MODEL>(COP_CHAR);
+				
+				// Tạo cơ chế random ngẫu nhiên giữa 50960 và 50962
+				int chosenCopChar = (rand() % 2 == 0) ? 50960 : 50962;
+
+				Command<Commands::REQUEST_MODEL>(chosenCopChar);
 				Command<Commands::LOAD_ALL_MODELS_NOW>();
-				Command<Commands::CREATE_CHAR_INSIDE_CAR>(hVeh, PED_TYPE_COP, COP_CHAR, &hDriver);
+				Command<Commands::CREATE_CHAR_INSIDE_CAR>(hVeh, PED_TYPE_COP, chosenCopChar, &hDriver);
 				pVeh->m_pDriver = CPools::GetPed(hDriver);
-				Command<Commands::CREATE_CHAR_AS_PASSENGER>(hVeh, PED_TYPE_COP, COP_CHAR, 0, &hPass);
+				
+				// Lấy lại ngẫu nhiên một lần nữa cho hành khách ghế phụ
+				chosenCopChar = (rand() % 2 == 0) ? 50960 : 50962;
+				
+				Command<Commands::REQUEST_MODEL>(chosenCopChar);
+				Command<Commands::LOAD_ALL_MODELS_NOW>();
+				Command<Commands::CREATE_CHAR_AS_PASSENGER>(hVeh, PED_TYPE_COP, chosenCopChar, 0, &hPass);
 				pVeh->m_apPassengers[0] = CPools::GetPed(hPass);
-				Command<Commands::MARK_MODEL_AS_NO_LONGER_NEEDED>(COP_CHAR);
+				
+				Command<Commands::MARK_MODEL_AS_NO_LONGER_NEEDED>(50960);
+				Command<Commands::MARK_MODEL_AS_NO_LONGER_NEEDED>(50962);
 			}
 			else
 			{
